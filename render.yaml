@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: futscout
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: MONGODB_URI
+        sync: false
