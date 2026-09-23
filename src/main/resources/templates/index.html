@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutScout — Player Scout Database</title>
+    <style>
+        :root {
+            --primary: #4ade80;
+            --primary-dark: #22c55e;
+            --accent2: #60a5fa;
+            --bg: #0b0e14;
+            --card-bg: #161a26;
+            --card-bg-2: #12151f;
+            --border: #242938;
+            --text: #eef1f8;
+            --text-dim: #8b93a7;
+            --danger: #f87171;
+            --success: #4ade80;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+        }
+
+        header {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-card h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .metric-card p {
+            margin: 6px 0 0 0;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .panel-header {
+            background: var(--primary);
+            color: #06210f;
+            padding: 10px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .form-group { margin-bottom: 14px; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 9px;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+            background: var(--card-bg-2);
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button.btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: #06210f;
+            border: none;
+            padding: 11px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button.btn-submit:hover { background: var(--primary-dark); }
+
+        button.btn-reset {
+            width: 100%;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        button.btn-reset:hover { color: var(--text); border-color: var(--text-dim); }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-controls h3 { margin: 0; }
+
+        .controls-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .controls-right input, .controls-right select {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            background: var(--card-bg-2);
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            background: var(--card-bg-2);
+            color: var(--primary);
+            text-align: left;
+            padding: 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .badge {
+            padding: 3px 9px;
+            font-size: 0.7rem;
+            border-radius: 20px;
+            border: 1px solid var(--accent2);
+            color: var(--accent2);
+            font-weight: bold;
+        }
+
+        .rating-pill {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            margin-right: 4px;
+        }
+
+        .action-btn.delete:hover { color: var(--danger); border-color: var(--danger); }
+        .action-btn.edit:hover { color: var(--primary); border-color: var(--primary); }
+
+        .empty-row td {
+            text-align: center;
+            color: var(--text-dim);
+            padding: 40px 10px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<header>⚽ FutScout — Player Scout Database</header>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <h2 id="total-players">0</h2>
+        <p>Total Players</p>
+    </div>
+    <div class="metric-card">
+        <h2 id="total-clubs">0</h2>
+        <p>Clubs</p>
+    </div>
+    <div class="metric-card">
+        <h2 id="avg-rating">0.0</h2>
+        <p>Avg Rating</p>
+    </div>
+    <div class="metric-card">
+        <h2 id="top-value">€0M</h2>
+        <p>Highest Value</p>
+    </div>
+</div>
+
+<div class="main-layout">
+    <!-- Form Panel -->
+    <div class="panel">
+        <div class="panel-header">Scout a Player</div>
+        <form id="playerForm">
+            <input type="hidden" id="playerId">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label>Club</label>
+                <input type="text" id="club" required>
+            </div>
+            <div class="form-group">
+                <label>Position</label>
+                <select id="position" required>
+                    <option value="">Select position</option>
+                    <option>GK</option><option>CB</option><option>LB</option><option>RB</option>
+                    <option>CDM</option><option>CM</option><option>CAM</option>
+                    <option>LM</option><option>RM</option><option>LW</option><option>RW</option>
+                    <option>ST</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nationality</label>
+                <input type="text" id="nationality" required>
+            </div>
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" id="age" required min="14" max="50">
+            </div>
+            <div class="form-group">
+                <label>Goals</label>
+                <input type="number" id="goals" required min="0">
+            </div>
+            <div class="form-group">
+                <label>Assists</label>
+                <input type="number" id="assists" required min="0">
+            </div>
+            <div class="form-group">
+                <label>Rating (0-10)</label>
+                <input type="number" id="rating" step="0.1" required min="0" max="10">
+            </div>
+            <div class="form-group">
+                <label>Market Value (€M)</label>
+                <input type="number" id="marketValue" step="0.1" required min="0">
+            </div>
+            <button type="submit" class="btn-submit" id="saveBtn">Add Player</button>
+            <button type="button" class="btn-reset" id="resetBtn">Cancel edit</button>
+        </form>
+    </div>
+
+    <!-- Table Panel -->
+    <div class="panel">
+        <div class="table-controls">
+            <h3>Player Database</h3>
+            <div class="controls-right">
+                <input type="text" id="searchInput" placeholder="Search by name...">
+                <select id="positionFilter"><option value="all">All Positions</option></select>
+                <select id="clubFilter"><option value="all">All Clubs</option></select>
+                <select id="sortSelect">
+                    <option value="rating">Sort: Rating</option>
+                    <option value="goals">Sort: Goals</option>
+                    <option value="assists">Sort: Assists</option>
+                    <option value="marketValue">Sort: Value</option>
+                    <option value="age">Sort: Age</option>
+                    <option value="name">Sort: Name</option>
+                </select>
+                <select id="orderSelect">
+                    <option value="desc">↓ Desc</option>
+                    <option value="asc">↑ Asc</option>
+                </select>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Club</th>
+                <th>Pos</th>
+                <th>Nat.</th>
+                <th>Age</th>
+                <th>G</th>
+                <th>A</th>
+                <th>Rating</th>
+                <th>Value</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="playerTableBody">
+            <!-- Dynamic Rows -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // This page is served by the Spring Boot app itself (templates/index.html is the
+    // auto-detected welcome page since Thymeleaf is on the classpath), so relative
+    // URLs always hit the right backend - no split-origin API_URL logic needed here.
+    const API_URL = '/api/players';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMeta();
+        fetchPlayers();
+    });
+
+    async function loadMeta() {
+        try {
+            const [positions, clubs] = await Promise.all([
+                fetch(`${API_URL}/meta/positions`).then(r => r.json()),
+                fetch(`${API_URL}/meta/clubs`).then(r => r.json())
+            ]);
+            fillSelect('positionFilter', positions, 'All Positions');
+            fillSelect('clubFilter', clubs, 'All Clubs');
+        } catch (err) {
+            console.error('Error loading filter metadata:', err);
+        }
+    }
+
+    function fillSelect(id, values, allLabel) {
+        const select = document.getElementById(id);
+        const current = select.value;
+        select.innerHTML = `<option value="all">${allLabel}</option>` +
+            values.map(v => `<option value="${v}">${v}</option>`).join('');
+        if (values.includes(current)) select.value = current;
+    }
+
+    async function fetchPlayers() {
+        const params = new URLSearchParams();
+        const search = document.getElementById('searchInput').value.trim();
+        const position = document.getElementById('positionFilter').value;
+        const club = document.getElementById('clubFilter').value;
+
+        if (search) params.set('search', search);
+        if (position !== 'all') params.set('position', position);
+        if (club !== 'all') params.set('club', club);
+        params.set('sortBy', document.getElementById('sortSelect').value);
+        params.set('order', document.getElementById('orderSelect').value);
+
+        try {
+            const response = await fetch(`${API_URL}?${params.toString()}`);
+            const players = await response.json();
+            renderTable(players);
+            updateMetrics(players);
+        } catch (err) {
+            console.error('Error fetching players:', err);
+        }
+    }
+
+    function renderTable(players) {
+        const tbody = document.getElementById('playerTableBody');
+        tbody.innerHTML = '';
+
+        if (!players.length) {
+            tbody.innerHTML = `<tr class="empty-row"><td colspan="10">No players found. Try adjusting your search or filters.</td></tr>`;
+            return;
+        }
+
+        players.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td>${escapeHtml(p.club)}</td>
+                <td><span class="badge">${escapeHtml(p.position)}</span></td>
+                <td>${escapeHtml(p.nationality)}</td>
+                <td>${p.age}</td>
+                <td>${p.goals}</td>
+                <td>${p.assists}</td>
+                <td class="rating-pill">★ ${p.rating.toFixed(1)}</td>
+                <td>€${formatValue(p.marketValue)}M</td>
+                <td>
+                    <button class="action-btn edit" onclick='editPlayer(${JSON.stringify(p)})'>Edit</button>
+                    <button class="action-btn delete" onclick="deletePlayer('${p.id}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateMetrics(players) {
+        document.getElementById('total-players').innerText = players.length;
+        document.getElementById('total-clubs').innerText = new Set(players.map(p => p.club)).size;
+        const avg = players.length ? (players.reduce((s, p) => s + p.rating, 0) / players.length).toFixed(1) : '0.0';
+        document.getElementById('avg-rating').innerText = avg;
+        const top = players.length ? Math.max(...players.map(p => p.marketValue)) : 0;
+        document.getElementById('top-value').innerText = `€${formatValue(top)}M`;
+    }
+
+    document.getElementById('playerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('playerId').value;
+        const payload = {
+            name: document.getElementById('name').value,
+            club: document.getElementById('club').value,
+            position: document.getElementById('position').value,
+            nationality: document.getElementById('nationality').value,
+            age: parseInt(document.getElementById('age').value),
+            goals: parseInt(document.getElementById('goals').value),
+            assists: parseInt(document.getElementById('assists').value),
+            rating: parseFloat(document.getElementById('rating').value),
+            marketValue: parseFloat(document.getElementById('marketValue').value)
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const endpoint = id ? `${API_URL}/${id}` : API_URL;
+
+        try {
+            const res = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                resetForm();
+                loadMeta();
+                fetchPlayers();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert('Error saving player: ' + (err.message || JSON.stringify(err) || 'check input validation rules.'));
+            }
+        } catch (err) {
+            console.error('Error saving player:', err);
+        }
+    });
+
+    async function deletePlayer(id) {
+        if (!confirm('Remove this player from the database?')) return;
+
+        try {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            loadMeta();
+            fetchPlayers();
+        } catch (err) {
+            console.error('Error deleting player:', err);
+        }
+    }
+
+    function editPlayer(p) {
+        document.getElementById('playerId').value = p.id;
+        document.getElementById('name').value = p.name;
+        document.getElementById('club').value = p.club;
+        document.getElementById('position').value = p.position;
+        document.getElementById('nationality').value = p.nationality;
+        document.getElementById('age').value = p.age;
+        document.getElementById('goals').value = p.goals;
+        document.getElementById('assists').value = p.assists;
+        document.getElementById('rating').value = p.rating;
+        document.getElementById('marketValue').value = p.marketValue;
+        document.getElementById('saveBtn').innerText = 'Update Player';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('playerId').value = '';
+        document.getElementById('playerForm').reset();
+        document.getElementById('saveBtn').innerText = 'Add Player';
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', resetForm);
+    document.getElementById('searchInput').addEventListener('input', debounce(fetchPlayers, 250));
+    document.getElementById('positionFilter').addEventListener('change', fetchPlayers);
+    document.getElementById('clubFilter').addEventListener('change', fetchPlayers);
+    document.getElementById('sortSelect').addEventListener('change', fetchPlayers);
+    document.getElementById('orderSelect').addEventListener('change', fetchPlayers);
+
+    function debounce(fn, delay) {
+        let t;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+    }
+
+    function formatValue(v) {
+        return Number(v).toFixed(1).replace(/\.0$/, '');
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str ?? '';
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>
